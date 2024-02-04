@@ -4,14 +4,18 @@ import React, { useEffect, useState } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import ConfirmDelete from '../reusable_ui/ConfirmDelete';
 import { useSelector } from 'react-redux';
-import { fetchEmployees } from "../redux/employees/employeeSlice";
+import { fetchEmployees, updateEmployee } from "../redux/employees/employeeSlice";
 import { useDispatch } from "react-redux";
 import { deleteEmployee } from '../redux/employees/employeeSlice';
+import CreateEmployeeForm from "./CreateEmployeeForm";
+import { Modal } from "@mui/material";
 function DashboardTable({onEdit}) {
   const employees = useSelector(state => state.employees);
 
   const dispatch = useDispatch();
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [employeeToEdit, setEmployeeToEdit] = useState(null); // New state for the employee to edit
+
   useEffect(() => {
     dispatch(fetchEmployees())
   }, [dispatch]);
@@ -47,12 +51,14 @@ function DashboardTable({onEdit}) {
       <div>{employee.address}</div>
       <div>{employee.isActive ? 'Yes' : 'No'}</div>
      
-      <button onClick={() => handleEdit(employee.id)}><FaEdit /></button>
+      <button onClick={() =>  setEmployeeToEdit(employee)}><FaEdit /></button>
       <button onClick={() => setEmployeeToDelete(employee)}><FaTrash /></button>
       {employeeToDelete == employee&& (<ConfirmDelete 
       resourceName="employee" 
       onConfirm={() => handleConfirmDelete(employeeToDelete)} 
       onCloseModal={() => setEmployeeToDelete(null)} />)}
+      
+        
       <div></div>
 
     </Table.Row>
@@ -61,7 +67,14 @@ function DashboardTable({onEdit}) {
 
           
         </Table>  
-        </Menus>  
+        </Menus> 
+        {employeeToEdit && (
+        
+        <CreateEmployeeForm 
+        employeeToEdit={employeeToEdit} 
+        onCloseModal={() => setEmployeeToEdit(null)} 
+        />
+        )} 
       </div>
   );
 }

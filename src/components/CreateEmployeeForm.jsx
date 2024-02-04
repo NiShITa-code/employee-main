@@ -11,12 +11,12 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
     const isEditSession = Boolean(editId);
 
     const { register, handleSubmit, reset, formState } = useForm({
-        defaultValues: isEditSession ? editValues : {},
+        defaultValues: isEditSession ? employeeToEdit : {},
     });
 
     const { errors } = formState;
     const dispatch = useDispatch();
-
+   
     
         const onSubmit =(data) => {
             try {
@@ -27,7 +27,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                     dispatch(addEmployee(data));
                     console.log('Employee added successfully');
                 }
-    
+                reset();
                 onCloseModal?.();
             } catch (error) {
                 console.error('Error:', error);
@@ -45,6 +45,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                     id="id"
                     {...register("id", {
                         required: "This field is required",
+                        
                         min: { value: 1, message: "S.No should be greater than 0" },
                     })}
                 />
