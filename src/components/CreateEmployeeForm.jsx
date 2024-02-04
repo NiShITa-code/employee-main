@@ -3,37 +3,36 @@ import Input from "../reusable_ui/Input";
 import Form from "../reusable_ui/Form";
 import Button from "../reusable_ui/Button";
 import FormRow from "../reusable_ui/FormRow";
+import { useDispatch } from 'react-redux';
+import { addEmployee, updateEmployee } from "../redux/employees/employeeSlice.js";
 
-function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal, onSave}) {
+function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
     const { id: editId, ...editValues } = employeeToEdit;
     const isEditSession = Boolean(editId);
 
     const { register, handleSubmit, reset, formState } = useForm({
         defaultValues: isEditSession ? editValues : {},
     });
+
     const { errors } = formState;
+    const dispatch = useDispatch();
+
     
-    const onSubmit = async (data) => {
-        try {
-          const response = await fetch('https://localhost:7127/api/employee', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-          });
-      
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const newEmployee = await response.json();
-          onSave(newEmployee);
-          console.log('Employee added successfully');
-          onCloseModal?.();
-        } catch (error) {
-          console.error('Error adding employee:', error);
-        } 
-      };
+        const onSubmit =(data) => {
+            try {
+                if (isEditSession) {
+                    dispatch(updateEmployee({ id: editId, employee: data }));
+                    console.log('Employee updated successfully');
+                } else {
+                    dispatch(addEmployee(data));
+                    console.log('Employee added successfully');
+                }
+    
+                onCloseModal?.();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
 
     return (
         <Form className="border p-7 rounded-lg" type={onCloseModal ? "modal" : "regular"} onSubmit={handleSubmit(onSubmit)}>
