@@ -7,9 +7,9 @@ function AddEmployee() {
       <div>
         <Modal>
           <Modal.Open opens="form">
-            <div >
-            <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded m-4 text-lg"> Add Employee</button>
-            </div>
+            
+            <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-4 px-5 rounded m-4 text-lg"> Add Employee</button>
+            
           </Modal.Open>
           <Modal.Window name="form">
             <CreateEmployeeForm />

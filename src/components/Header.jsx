@@ -7,7 +7,7 @@ function Header() {
 
     return (
         <header className="bg-gray-800 text-white shadow-md">
-  <div className="flex justify-between items-center max-w-6xl mx-auto p-3">
+  <div className="flex justify-between items-center max-w-7.5xl mx-auto p-3">
     
     <Link to='/' className="text-white hover:text-gray-300">
       <h1 className="font-bold text-lg sm:text-xl">
@@ -21,10 +21,10 @@ function Header() {
         <Link to='/'>Dashboard</Link>
       </li>
       <Link to='/sign-in'>
-         {currentUser?(<img className="rounded-full h-7 w-7 object-cover" src={currentUser.avatar} alt='profile'/>):(<li className=' text-gray-300 hover:underline'>Sign In</li>)}  
+         {currentUser?(<li className=' text-gray-300 hover:underline '>Sign Out</li>):(<li className=' text-gray-300 hover:underline'>Sign In</li>)}  
       </Link>
     </ul>
-  
+    
   </div>
 </header>
 

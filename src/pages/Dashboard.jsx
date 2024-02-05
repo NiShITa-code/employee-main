@@ -5,12 +5,10 @@ import Heading from "../reusable_ui/Heading"
 import Row from "../reusable_ui/Row"
 
 function Dashboard() {
-  
-    
     return (
         <>
         <Row>
-            <Heading as='h1' className="text-center">All Employees</Heading>
+            <Heading as='h1' className="text-center">Employee Dashboard</Heading>
         </Row>
         <Row>
             <AddEmployee/>

@@ -8,7 +8,7 @@ import { fetchEmployees, updateEmployee } from "../redux/employees/employeeSlice
 import { useDispatch } from "react-redux";
 import { deleteEmployee } from '../redux/employees/employeeSlice';
 import CreateEmployeeForm from "./CreateEmployeeForm";
-import { Modal } from "@mui/material";
+import Modal from "../reusable_ui/Modal";
 function DashboardTable({onEdit}) {
   const employees = useSelector(state => state.employees);
 
@@ -69,12 +69,14 @@ function DashboardTable({onEdit}) {
         </Table>  
         </Menus> 
         {employeeToEdit && (
-        
+
         <CreateEmployeeForm 
-        employeeToEdit={employeeToEdit} 
-        onCloseModal={() => setEmployeeToEdit(null)} 
+          employeeToEdit={employeeToEdit} 
+          onCloseModal={() => setEmployeeToEdit(null)} 
         />
-        )} 
+
+    )}
+       
       </div>
   );
 }

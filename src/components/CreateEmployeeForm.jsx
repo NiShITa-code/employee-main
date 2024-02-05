@@ -36,9 +36,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
 
     return (
         <Form className="border p-7 rounded-lg" type={onCloseModal ? "modal" : "regular"} onSubmit={handleSubmit(onSubmit)}>
-            <button type="button" onClick={onCloseModal} className="absolute right-0 top-0 m-2">
-        X
-      </button>
+    
             <FormRow label="S.No">
                 <Input
                     type="number"
