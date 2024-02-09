@@ -16,6 +16,8 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
 
     const { errors } = formState;
     const dispatch = useDispatch();
+
+    
    
     
         const onSubmit =(data) => {
@@ -36,7 +38,8 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
 
     return (
         <Form className="border p-7 rounded-lg" type={onCloseModal ? "modal" : "regular"} onSubmit={handleSubmit(onSubmit)}>
-    
+            <h1 style={{textAlign: "center", color: "#4a5568", fontSize: "2em", fontWeight: "bold", marginBottom: "20px"}}>Employee Information</h1>
+            {}
             <FormRow label="S.No">
                 <Input
                     type="number"

@@ -27,6 +27,7 @@ function SignIn() {
           dispatch(signInFailure('Invalid email or password')); // Dispatch the signInFailure action
           return;
         }
+        localStorage.setItem('token', data.token);
         dispatch(signInSuccess(data));
         navigate('/'); // Navigate to the dashboard page
       } catch (error) {
