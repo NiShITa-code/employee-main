@@ -1,46 +1,155 @@
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray, FormProvider } from "react-hook-form";
 import Input from "../reusable_ui/Input";
 import Form from "../reusable_ui/Form";
 import Button from "../reusable_ui/Button";
 import FormRow from "../reusable_ui/FormRow";
+import AddQualificationDetails from "./AddQualificationDetails.jsx";
+import AddEmployeeDocument from "./AddEmployeeDocuments.jsx";
 import { useDispatch } from 'react-redux';
-import { addEmployee, updateEmployee } from "../redux/employees/employeeSlice.js";
+import { addEmployee, updateEmployee, addQualifications, uploadDocuments } from "../redux/employees/employeeSlice.js";
+import { useState } from "react";
+import Heading from "../reusable_ui/Heading.jsx";
+
+
 
 function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
     const { id: editId, ...editValues } = employeeToEdit;
     const isEditSession = Boolean(editId);
-
-    const { register, handleSubmit, reset, formState } = useForm({
-        defaultValues: isEditSession ? employeeToEdit : {},
+    
+    const { register, handleSubmit, reset, formState, trigger, control, setValue, getValues } = useForm({
+        defaultValues: {...isEditSession ? employeeToEdit : {},
+        qualifications: [{ QualificationName: "", Institution: "", YearOfPassing: "", Percentage: "", Stream: "" }],
+        documents: [{ file: null, remarks: "" }]}
+    });
+    
+    const { fields: qualificationFields, append: appendQualification, remove: removeQualification } = useFieldArray({
+        control,
+        name: "qualifications",
+        defaultValue: isEditSession && editValues.qualifications ? editValues.qualifications : [{QualificationName: "", Institution: "", Stream: "", YearOfPassing: "", Percentage: "" }] // Adjust this line
     });
 
+
+   
+    const { fields: documentFields, append: appendDocument, remove: removeDocument } = useFieldArray({
+        control,
+        name: "documents",
+        defaultValue: isEditSession && editValues.documents ? editValues.documents : [{ file: null, remarks: "" }]
+      });
+      const [uploadedDocuments, setUploadedDocuments] = useState([]);
     const { errors } = formState;
     const dispatch = useDispatch();
-
+    const [step, setStep] = useState(1);
     
    
     
-        const onSubmit =(data) => {
-            try {
-                if (isEditSession) {
-                    dispatch(updateEmployee({ id: editId, employee: data }));
-                    console.log('Employee updated successfully');
-                } else {
-                    dispatch(addEmployee(data));
-                    console.log('Employee added successfully');
-                }
-                reset();
-                onCloseModal?.();
-            } catch (error) {
-                console.error('Error:', error);
+    const onSubmit = async(data) => {
+        event.preventDefault();
+        
+        const employeeDetails = {
+            id: data.id,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            gender: data.gender,
+            department: data.department,
+            salary: data.salary,
+            address: data.address
+        }; 
+        try {
+                        let employeeId;
+                        if (isEditSession) {
+                            // Use formData instead of newEmployee
+                            dispatch(updateEmployee({ id: editId, employee: employeeDetails }));
+                            console.log('Employee updated successfully');
+                            employeeId = editId;
+                        } else {
+                            // Use formData instead of newEmployee
+                            
+                            const newEmployee = await dispatch(addEmployee(employeeDetails)).unwrap();
+                            console.log('Employee added successfully');
+                            employeeId = newEmployee.id;
+                        }
+
+                        
+
+                        if (data.qualifications && data.qualifications.length > 0) {
+                            const qualificationsWithEmployeeId = data.qualifications.map(qualification => ({
+                                ...qualification,
+                                EmployeeId: employeeId, // replace employeeId with the actual employee ID
+                            }));
+    
+                            dispatch(addQualifications({ id: employeeId, qualifications: qualificationsWithEmployeeId } ));
+                            console.log('Qualifications added successfully');
+                        }    
+                        reset();
+                        
+                        if (data.documents && data.documents.length > 0) {
+                            console.log('Documents:', data.documents);
+                            const documents = data.documents.map(document => ({
+                                file: document.file, // get the File object from the FileList
+                                
+                                remark: document.remarks,
+                            }));
+                            console.log('Documents:', documents);
+                    
+                            dispatch(uploadDocuments({ employeeId: employeeId, documents: documents }));
+                            console.log('Documents uploaded successfully');
+                        
+                        
+                        } else {
+                            console.log('No documents to upload');
+                        }
+                        
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+        onCloseModal?.();
+            
+    };
+    const handleUpload = (file, remarks) => {
+        // Add the uploaded document to the state
+        console.log(file);
+        setUploadedDocuments(prevDocuments => [...prevDocuments, { file, remarks }]);
+        setValue(name, file);
+    };
+    const deleteDocument = (index) => {
+        // Remove the document at the given index from the state
+        setUploadedDocuments(prevDocuments => prevDocuments.filter((_, i) => i !== index));
+        setValue(`documents[${index}].file`, null);
+        setValue(`documents[${index}].remarks`, null);
+    };
+    
+    
+        const fieldsByStep = {
+            1: ["id", "firstName", "lastName", "email", "gender", "department", "salary", "address", "isActive"],
+            2: ["qualifications"],
+            3: ["documents"],
+        };
+
+      
+        const nextStep = async (event) => {
+            event.preventDefault();
+            const currentFields = fieldsByStep[step];
+            const isValid = await trigger(currentFields);
+            if (isValid) {
+                
+                setStep(step + 1);
             }
         };
 
+        const prevStep = () => {
+            setStep(step - 1);
+        }
+
     return (
-        <Form className="border p-7 rounded-lg" type={onCloseModal ? "modal" : "regular"} onSubmit={handleSubmit(onSubmit)}>
-            <h1 style={{textAlign: "center", color: "#4a5568", fontSize: "2em", fontWeight: "bold", marginBottom: "20px"}}>Employee Information</h1>
-            {}
-            <FormRow label="S.No">
+        <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+        <Form className="border p-7 rounded-lg"  type={onCloseModal ? "modal" : "regular"} onSubmit={handleSubmit(onSubmit)}>
+            <h1 style={{textAlign: "center", color: "#4a5568", fontSize: "2em", fontWeight: "bold", marginBottom: "20px"}}> {step === 1 && 'Employee Information'}
+        {step === 2 && 'Qualification Detail'}
+        {step === 3 && 'Additional Documents'}</h1>
+            {step === 1 && (
+                <>
+                <FormRow label="S.No">
                 <Input
                     type="number"
                     id="id"
@@ -136,7 +245,59 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                 />
             </FormRow>)}
 
-            <FormRow>
+                </>
+            )}
+            {step === 2 && (
+                
+                <>
+    {qualificationFields.map((field, index) => (
+      <AddQualificationDetails
+        key={field.id}
+        register={register}
+        index={index}
+        removeQualification={removeQualification}
+        field={field}
+        setValue={setValue}
+      />
+    ))}
+
+     <button type="button" className="border p-2 mt-6 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 transition-colors duration-200"  onClick={() => appendQualification({ QualificationName: "", Institution: "", Stream: "", YearOfPassing: "", Percentage: "" })}>
+             Add a qualification
+    </button>
+  </>
+
+  )}
+            {step === 3 && (
+                <>
+                {documentFields.map((field, index) => (
+    
+      <AddEmployeeDocument
+        key={field.id}
+        register={register}
+        index={index}
+        removeDocument={removeDocument}
+        field={field}
+        handleUpload={handleUpload}
+        control={control}
+        setValue={setValue}
+        getValues={getValues}
+        style={{ marginBottom: '10px' }}
+      />
+      
+    ))}
+    <button 
+    type="button" 
+    className="border p-2 mt-6 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 transition-colors duration-200" 
+    onClick={() => appendDocument({ file: null, remarks: "" })}
+    style={{ marginBottom: '10px' }}
+>
+    Add a document
+</button>
+   
+    </>
+            )}
+            
+            {/* <FormRow>
                 <Button
                     variation="danger"
                     type="reset"
@@ -147,8 +308,33 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                 <Button>
                     {isEditSession ? "Edit" : "Create new"}
                 </Button>
+            </FormRow> */}
+            <FormRow>
+                {step > 1 && (
+                    <Button
+                        variation="danger"
+                        type="button"
+                        onClick={prevStep}
+                    >
+                        Back
+                    </Button>
+                )}
+                {step < 3 ? (
+                    <Button
+                        variation="primary"
+                        type="button"
+                        onClick={nextStep}
+                    >
+                        Continue
+                    </Button>
+                ) : (
+                    <Button>
+                        {isEditSession ? "Edit" : "Create new"}
+                    </Button>
+                )}
             </FormRow>
         </Form>
+        </div>
     );
 }
 

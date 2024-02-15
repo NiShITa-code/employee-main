@@ -23,7 +23,8 @@ const Form = styled.form`
       transition: all 0.3s ease; // Added transition
     `}
     
-  overflow: hidden;
+  overflowY: auto;
+  max-height: 90vh
   font-size: 1rem;
 `;
 export default Form;

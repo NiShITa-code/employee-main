@@ -8,8 +8,9 @@ import { fetchEmployees, updateEmployee } from "../redux/employees/employeeSlice
 import { useDispatch } from "react-redux";
 import { deleteEmployee } from '../redux/employees/employeeSlice';
 import CreateEmployeeForm from "./CreateEmployeeForm";
-import { HiPencil, HiTrash } from "react-icons/hi2";
+import { HiPencil, HiTrash, HiDocument } from "react-icons/hi2";
 import Modal from "../reusable_ui/Modal";
+import EmployeeDocuments from "./EmployeeDocuments";
 
 function DashboardTable({onEdit}) {
   const employees = useSelector(state => state.employees);
@@ -17,16 +18,16 @@ function DashboardTable({onEdit}) {
   const dispatch = useDispatch();
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
   const [employeeToEdit, setEmployeeToEdit] = useState(null); // New state for the employee to edit
-
+  
   useEffect(() => {
     dispatch(fetchEmployees())
   }, [dispatch]);
 
 
-  const handleConfirmDelete = (employee) => {
-    dispatch(deleteEmployee(employee.id));
+  const handleConfirmDelete = async (employee) => {
+    await dispatch(deleteEmployee(employee.id));
     setEmployeeToDelete(null)
-    Modal.close();
+    
   };
 
   const handleEdit = (employee) => {
@@ -51,7 +52,8 @@ function DashboardTable({onEdit}) {
           <div>Department</div>
           <div>Salary</div>
           <div>Address</div>     
-          <div>Is Active</div>     
+          <div>Is Active</div>   
+          <div>Documents</div>  
         </Table.Header>
 
 
@@ -65,6 +67,22 @@ function DashboardTable({onEdit}) {
           <div>{employee.salary}</div>
           <div>{employee.address}</div>
           <div>{employee.isActive ? 'Yes' : 'No'}</div>   
+          <div>
+          <Modal>
+          <Modal.Open opens="form">
+            
+          <HiDocument className="text-green-500 hover:text-green-700 text-2xl cursor-pointer m-4" />
+            
+          </Modal.Open>
+          <Modal.Window name="form">
+            <EmployeeDocuments
+            employeeId={employee.id}
+            />
+          </Modal.Window>
+        </Modal>
+            
+            
+          </div>
       <div>
           <Modal>
             <Menus.Menu>
