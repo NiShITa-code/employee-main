@@ -42,9 +42,7 @@ function Header() {
     </Link>
     
     <ul className='flex gap-4'>
-      <li className='hidden sm:inline text-gray-300 hover:underline'>
-        <Link to='/'>Dashboard</Link>
-      </li>
+      
       {currentUser ? (
         <li className=' text-gray-300 hover:underline ' onClick={handleSignOut}>Sign Out</li>
       ) : (

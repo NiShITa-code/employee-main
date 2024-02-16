@@ -18,15 +18,18 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
     
     const { register, handleSubmit, reset, formState, trigger, control, setValue, getValues } = useForm({
         defaultValues: {...isEditSession ? employeeToEdit : {},
-        qualifications: [{ QualificationName: "", Institution: "", YearOfPassing: "", Percentage: "", Stream: "" }],
+        qualifications: isEditSession ? editValues.qualifications.map(({ id, employeeId, ...rest }) => rest) : [{ QualificationName: "", Institution: "", YearOfPassing: "", Percentage: "", Stream: "" }],
         documents: [{ file: null, remarks: "" }]}
     });
-    
+    console.log(editValues.qualifications);
     const { fields: qualificationFields, append: appendQualification, remove: removeQualification } = useFieldArray({
         control,
         name: "qualifications",
-        defaultValue: isEditSession && editValues.qualifications ? editValues.qualifications : [{QualificationName: "", Institution: "", Stream: "", YearOfPassing: "", Percentage: "" }] // Adjust this line
+        defaultValue: isEditSession && editValues.qualifications ? 
+        editValues.qualifications.map(({ id, employeeId, ...rest }) => rest) 
+        : [{QualificationName: "", Institution: "", Stream: "", YearOfPassing: "", Percentage: "" }] // Adjust this line
     });
+    
 
 
    
@@ -56,53 +59,45 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
             address: data.address
         }; 
         try {
-                        let employeeId;
-                        if (isEditSession) {
-                            // Use formData instead of newEmployee
-                            dispatch(updateEmployee({ id: editId, employee: employeeDetails }));
-                            console.log('Employee updated successfully');
-                            employeeId = editId;
-                        } else {
-                            // Use formData instead of newEmployee
+            let employeeId;
+            if (isEditSession) {
+                           
+                dispatch(updateEmployee({ id: editId, employee: employeeDetails }));
+                console.log('Employee updated successfully');
+                employeeId = editId;
+            } else {
+                    // Use formData instead of newEmployee
+                const newEmployee = await dispatch(addEmployee(employeeDetails)).unwrap();
+                console.log('Employee added successfully');
+                employeeId = newEmployee.id;
+                if (data.qualifications && data.qualifications.length > 0) {
+                    const qualificationsWithEmployeeId = data.qualifications.map(qualification => ({
+                        ...qualification,
+                        EmployeeId: employeeId, // replace employeeId with the actual employee ID
+                    }));
+        
+                    dispatch(addQualifications({ id: employeeId, qualifications: qualificationsWithEmployeeId } ));
+                    console.log('Qualifications added successfully');
+                }    
+                reset();
                             
-                            const newEmployee = await dispatch(addEmployee(employeeDetails)).unwrap();
-                            console.log('Employee added successfully');
-                            employeeId = newEmployee.id;
-                        }
+                if (data.documents && data.documents.length > 0) {
+                    console.log('Documents:', data.documents);
+                    const documents = data.documents.map(document => ({
+                    file: document.file, // get the File object from the FileList
+                    remark: document.remarks,
+                    }));
+                        console.log('Documents:', documents);
+                    dispatch(uploadDocuments({ employeeId: employeeId, documents: documents }));
+                    console.log('Documents uploaded successfully');
+                } else {
+                    console.log('No documents to upload');
+                }
 
-                        
-
-                        if (data.qualifications && data.qualifications.length > 0) {
-                            const qualificationsWithEmployeeId = data.qualifications.map(qualification => ({
-                                ...qualification,
-                                EmployeeId: employeeId, // replace employeeId with the actual employee ID
-                            }));
-    
-                            dispatch(addQualifications({ id: employeeId, qualifications: qualificationsWithEmployeeId } ));
-                            console.log('Qualifications added successfully');
-                        }    
-                        reset();
-                        
-                        if (data.documents && data.documents.length > 0) {
-                            console.log('Documents:', data.documents);
-                            const documents = data.documents.map(document => ({
-                                file: document.file, // get the File object from the FileList
-                                
-                                remark: document.remarks,
-                            }));
-                            console.log('Documents:', documents);
-                    
-                            dispatch(uploadDocuments({ employeeId: employeeId, documents: documents }));
-                            console.log('Documents uploaded successfully');
-                        
-                        
-                        } else {
-                            console.log('No documents to upload');
-                        }
-                        
-                    } catch (error) {
-                        console.error('Error:', error);
-                    }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
         onCloseModal?.();
             
     };
@@ -247,7 +242,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
 
                 </>
             )}
-            {step === 2 && (
+            {step === 2 && !isEditSession && (
                 
                 <>
     {qualificationFields.map((field, index) => (
@@ -267,7 +262,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
   </>
 
   )}
-            {step === 3 && (
+            {step === 3 && !isEditSession && (
                 <>
                 {documentFields.map((field, index) => (
     
@@ -310,7 +305,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                 </Button>
             </FormRow> */}
             <FormRow>
-                {step > 1 && (
+                {step > 1 && !isEditSession && (
                     <Button
                         variation="danger"
                         type="button"
@@ -319,7 +314,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                         Back
                     </Button>
                 )}
-                {step < 3 ? (
+                {(step < 3 && !isEditSession) ? (
                     <Button
                         variation="primary"
                         type="button"
@@ -329,7 +324,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                     </Button>
                 ) : (
                     <Button>
-                        {isEditSession ? "Edit" : "Create new"}
+                        {isEditSession ? "Save" : "Submit"}
                     </Button>
                 )}
             </FormRow>
