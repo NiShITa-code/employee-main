@@ -16,6 +16,7 @@ export const addEmployee = createAsyncThunk(
       body: JSON.stringify(employee)
     });
 
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -26,6 +27,20 @@ export const addEmployee = createAsyncThunk(
   }
 );
 
+export const fetchEmployeeByEmail = createAsyncThunk(
+  'employees/fetchEmployeeByEmail',
+  async (email, thunkAPI) => {
+    const response = await fetch(`https://localhost:7127/api/employee/employee-details?email=${email}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const employee = await response.json();
+
+    return employee;
+  }
+);
 export const updateEmployee = createAsyncThunk(
   'employees/update',
   async ({ id, employee }, thunkAPI) => {
@@ -165,6 +180,16 @@ const employeeSlice = createSlice({
             const employee = state.find((employee) => employee.id === employeeId);
             if (employee) {
               employee.documents = documents;
+            }
+          });
+
+          builder.addCase(fetchEmployeeByEmail.fulfilled, (state, action) => {
+            // Here you can decide what to do with the fetched employee.
+            // For example, you can add it to the state if it's not already there:
+            const employee = action.payload;
+            const index = state.findIndex((emp) => emp.id === employee.id);
+            if (index === -1) {
+              state.push(employee);
             }
           });
       },

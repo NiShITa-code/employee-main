@@ -8,9 +8,10 @@ import { fetchEmployees, updateEmployee } from "../redux/employees/employeeSlice
 import { useDispatch } from "react-redux";
 import { deleteEmployee } from '../redux/employees/employeeSlice';
 import CreateEmployeeForm from "./CreateEmployeeForm";
-import { HiPencil, HiTrash, HiDocument } from "react-icons/hi2";
+import { HiPencil, HiTrash, HiDocument, HiInformationCircle } from "react-icons/hi2";
 import Modal from "../reusable_ui/Modal";
 import EmployeeDocuments from "./EmployeeDocuments";
+import EmployeeQualifications from "./EmployeeQualifications";
 
 function DashboardTable({onEdit}) {
   const employees = useSelector(state => state.employees);
@@ -43,7 +44,7 @@ function DashboardTable({onEdit}) {
   return (
       <div>
         <Menus>
-        <Table columns="repeat(10, 1fr)">
+        <Table columns="repeat(11, 1fr)">
         <Table.Header>
           <div>S.No</div>
           <div>Name</div>
@@ -54,6 +55,7 @@ function DashboardTable({onEdit}) {
           <div>Address</div>     
           <div>Is Active</div>   
           <div>Documents</div>  
+          <div>Qualifications</div>
         </Table.Header>
 
 
@@ -76,6 +78,20 @@ function DashboardTable({onEdit}) {
           </Modal.Open>
           <Modal.Window name="form">
             <EmployeeDocuments
+            employeeId={employee.id}
+            />
+          </Modal.Window>
+        </Modal>
+        </div>
+        <div>
+        <Modal>
+          <Modal.Open opens="form">
+            
+          <HiInformationCircle className="text-green-500 hover:text-green-700 text-2xl cursor-pointer m-4" />
+            
+          </Modal.Open>
+          <Modal.Window name="form">
+            <EmployeeQualifications
             employeeId={employee.id}
             />
           </Modal.Window>

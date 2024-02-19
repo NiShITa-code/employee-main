@@ -1,4 +1,3 @@
-import AddCabin from "../components/AddCabin"
 import AddEmployee from "../components/AddEmployee"
 import DashboardTable from "../components/DashboardTable"
 import Heading from "../reusable_ui/Heading"

@@ -184,6 +184,10 @@ img {
   /* For dark mode */
   filter: grayscale(var(--image-grayscale)) opacity(var(--image-opacity));
 }
+.preview-image:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s ease-in-out;
+}
 
 `;
 

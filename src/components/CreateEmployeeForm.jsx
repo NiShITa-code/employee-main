@@ -42,6 +42,26 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
     const { errors } = formState;
     const dispatch = useDispatch();
     const [step, setStep] = useState(1);
+    const registerUser = async (email, password) => {
+        const response = await fetch('https://localhost:7127/api/account/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                Email: email,
+                Password: password
+            })
+        });
+    
+        if (response.ok) {
+            const result = await response.json();
+            console.log(result.Message);
+        } else {
+            const error = await response.json();
+            console.error(error);
+        }
+    }
     
    
     
@@ -61,8 +81,8 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
         try {
             let employeeId;
             if (isEditSession) {
-                           
-                dispatch(updateEmployee({ id: editId, employee: employeeDetails }));
+                
+                dispatch(updateEmployee({ id: editId, employee: { ...employeeDetails, isActive: data.isActive } }));
                 console.log('Employee updated successfully');
                 employeeId = editId;
             } else {
@@ -90,9 +110,12 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                         console.log('Documents:', documents);
                     dispatch(uploadDocuments({ employeeId: employeeId, documents: documents }));
                     console.log('Documents uploaded successfully');
+                    registerUser(data.email, "DefaultPassword123!");
                 } else {
                     console.log('No documents to upload');
                 }
+                
+              
 
             }
         } catch (error) {
@@ -101,6 +124,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
         onCloseModal?.();
             
     };
+
     const handleUpload = (file, remarks) => {
         // Add the uploaded document to the state
         console.log(file);
@@ -144,6 +168,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
         {step === 3 && 'Additional Documents'}</h1>
             {step === 1 && (
                 <>
+                {!isEditSession &&(
                 <FormRow label="S.No">
                 <Input
                     type="number"
@@ -154,7 +179,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                         min: { value: 1, message: "S.No should be greater than 0" },
                     })}
                 />
-            </FormRow>
+            </FormRow>)}
 
             <FormRow label="First Name">
                 <Input
@@ -177,7 +202,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                 />
             </FormRow>
 
-            <FormRow label="Email Id">
+            {!isEditSession &&(<FormRow label="Email Id">
                 <Input
                     type="email"
                     id="email"
@@ -189,7 +214,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                         },
                     })}
                 />
-            </FormRow>
+            </FormRow>)}
 
             <FormRow label="Gender">
                 <Input
