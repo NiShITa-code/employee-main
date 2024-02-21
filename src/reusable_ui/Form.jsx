@@ -18,13 +18,13 @@ const Form = styled.form`
     props.type === "modal" &&
     css`
       width: 80rem;
-      bcakground-color: var(--color-grey-0);
+      background-color: var(--color-grey-0);
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); // Added box-shadow
       transition: all 0.3s ease; // Added transition
     `}
     
   overflowY: auto;
-  max-height: 90vh
+  max-height: 90vh;
   font-size: 1rem;
 `;
 export default Form;

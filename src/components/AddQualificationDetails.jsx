@@ -18,6 +18,7 @@ function AddQualificationDetails({ register, index, removeQualification, field }
                     })}
                     defaultValue={field.QualificationName} // make sure to set up defaultValue
                 />
+                
             </FormRow>
             <FormRow label={`Institution`}>
                 <Input

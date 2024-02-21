@@ -16,8 +16,7 @@ function App() {
    <Routes>
     <Route element={<ProtectedRoutes/>}>
       <Route path="/" element={<Dashboard/>}/>
-      <Route path="/employee-details/:email" element={<EmployeeDetails/>}/>
-      
+      <Route path="/employee-details/:email" element={<EmployeeDetails/>}/>   
     </Route>
     <Route path="/sign-in" element={<SignIn/>}/>
     <Route path="/sign-up" element={<SignUp/>}/>

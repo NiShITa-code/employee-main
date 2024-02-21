@@ -8,8 +8,8 @@ import AddEmployeeDocument from "./AddEmployeeDocuments.jsx";
 import { useDispatch } from 'react-redux';
 import { addEmployee, updateEmployee, addQualifications, uploadDocuments } from "../redux/employees/employeeSlice.js";
 import { useState } from "react";
-import Heading from "../reusable_ui/Heading.jsx";
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
@@ -117,9 +117,11 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                 
               
 
+                toast.success('Form submitted successfully');
             }
         } catch (error) {
             console.error('Error:', error);
+            toast.error('An error occurred while submitting the form');
         }
         onCloseModal?.();
             
@@ -153,7 +155,9 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
             if (isValid) {
                 
                 setStep(step + 1);
-            }
+            }  else {
+                toast.error('Please fill in all required fields correctly before continuing.');
+              }
         };
 
         const prevStep = () => {
@@ -162,6 +166,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
 
     return (
         <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+         <ToastContainer />   
         <Form className="border p-7 rounded-lg"  type={onCloseModal ? "modal" : "regular"} onSubmit={handleSubmit(onSubmit)}>
             <h1 style={{textAlign: "center", color: "#4a5568", fontSize: "2em", fontWeight: "bold", marginBottom: "20px"}}> {step === 1 && 'Employee Information'}
         {step === 2 && 'Qualification Detail'}
@@ -178,7 +183,9 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                         
                         min: { value: 1, message: "S.No should be greater than 0" },
                     })}
+                    
                 />
+               
             </FormRow>)}
 
             <FormRow label="First Name">
@@ -190,6 +197,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                         minLength: { value: 2, message: "Name should be at least 2 characters" },
                     })}
                 />
+                
             </FormRow>
             <FormRow label="Last Name">
                 <Input
@@ -200,6 +208,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                         minLength: { value: 2, message: "Name should be at least 2 characters" },
                     })}
                 />
+                 
             </FormRow>
 
             {!isEditSession &&(<FormRow label="Email Id">
@@ -214,6 +223,7 @@ function CreateEmployeeForm({ employeeToEdit = {}, onCloseModal}) {
                         },
                     })}
                 />
+                
             </FormRow>)}
 
             <FormRow label="Gender">

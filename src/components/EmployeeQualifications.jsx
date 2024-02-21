@@ -4,6 +4,10 @@ import { useTable } from 'react-table';
 import { FaPencilAlt, FaSave, FaTrashAlt, FaPlus, FaTimes } from 'react-icons/fa';
 import styled from 'styled-components';
 import Button from '../reusable_ui/Button';
+import { useForm} from 'react-hook-form';
+import { Modal, Box, Typography } from '@mui/material';
+import QualificationInput from './QualificationInput';
+import Heading from '../reusable_ui/Heading';
 
 const EditableCell = ({
     value: initialValue,
@@ -52,36 +56,70 @@ const StyledTable = styled.table`
 const EmployeeQualifications = ({ employeeId }) => {
     const [qualifications, setQualifications] = useState([]);
     const [editingId, setEditingId] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const { register, control, handleSubmit, reset, formState} = useForm();
+
     const fetchQualifications = () => {
         axios.get(`https://localhost:7127/api/employee/${employeeId}/qualifications`)
             .then(response => setQualifications(response.data))
             .catch(error => console.error('There was an error!', error));
     };
+    
     const handleDelete = id => {
         axios.delete(`https://localhost:7127/api/employee/${employeeId}/qualifications/${id}`)
             .then(() => {
                 // After the deletion, fetch the qualifications again to get the updated list
+                setQualifications(oldQualifications => oldQualifications.filter(q => q.id !== id));
                 fetchQualifications();
+
             })
             .catch(error => console.error('There was an error!', error));
     };
-    const [newQualification, setNewQualification] = useState(null);
-    const handleAdd = () => {
-        const newQual = { 
-            id: null, // Set id to null for new qualification
-            qualificationName: '',
-            institution: '',
-            yearOfPassing: '',
-            percentage: '',
-            stream: ''
-        };
-        setQualifications(old => [
-            ...old,
-            newQual
-        ]);
-        setNewQualification(newQual);
-        setEditingId(null);
+    const handleOpenModal = () => {
+        setIsModalOpen(true); // Open the modal when the add button is clicked
     };
+
+    const handleCloseModal = () => {
+        reset();
+        setIsModalOpen(false); // Close the modal
+    };
+    const submitQualification = (index) => {
+        // Handle the submission of a qualification
+    };
+    const handleSubmitModal = (data) => {
+        console.log(data);
+        if (data) {
+            const qualificationWithEmployeeId = { qualifications: [{
+                qualificationName: data.qualifications.qualificationName,
+                institution: data.qualifications.institution,
+                yearOfPassing: data.qualifications.yearOfPassing,
+                percentage: data.qualifications.percentage,
+                stream: data.qualifications.stream,
+                employeeId: employeeId,
+            }]};
+            console.log(qualificationWithEmployeeId);
+            axios.post(`https://localhost:7127/api/employee/${employeeId}/qualifications`, qualificationWithEmployeeId, {
+            headers: {
+                'Content-Type': 'application/json', // set the Content-Type header
+            },
+        })
+        .then(() => {
+            reset();
+            setIsModalOpen(false);
+            fetchQualifications();  
+        })
+                .catch(error => console.error('There was an error!', error));
+        } else {
+            console.error('data is undefined');
+        }
+    };
+ 
+
+    const cancelQualification = (index) => {
+        handleCloseModal(); 
+    };
+    
+    
 
     useEffect(() => {
         fetchQualifications();
@@ -89,13 +127,10 @@ const EmployeeQualifications = ({ employeeId }) => {
     
     const handleCancel = () => {
         console.log('Cancel button clicked');
-        if (newQualification) {
-            setQualifications(old => old.filter(q => q.id !== newQualification.id)); // Remove the new row from the qualifications state based on its id
-        }
-        setNewQualification(null);
         setEditingId(null);
         fetchQualifications();
     };
+
     const updateMyData = (rowIndex, columnId, value) => {
         const updatedQualifications = [...qualifications];
 
@@ -104,51 +139,46 @@ const EmployeeQualifications = ({ employeeId }) => {
     
         // Update the state
         setQualifications(updatedQualifications);
-        if (newQualification && rowIndex === updatedQualifications.length - 1) {
-            setNewQualification(updatedQualifications[rowIndex]);
-        }
+        
     };
 
     const handleEdit = id => setEditingId(id);
 
     const handleSave = id => {
-        console.log('id:', id);
-    console.log('newQualification:', newQualification);
-        
-
         let updatedQualification;
-        if (id === null) { // If it's a new qualification
-            updatedQualification = newQualification;
-        } else { // If it's an existing qualification
-            updatedQualification = qualifications.find(q => q.id === id);
-        }
-        console.log(updatedQualification);
-
-    if (id === null) { // If it's a new qualification
-        let qualificationData;
-        const { id, ...qualificationWithoutId } = updatedQualification; // Remove id from updatedQualification
-        qualificationData = { ...qualificationWithoutId, employeeId };
         
-        axios.post(`https://localhost:7127/api/employee/${employeeId}/qualifications`, { qualifications: [qualificationData] }, {
-            headers: {
-                'Content-Type': 'application/json'
+            updatedQualification = qualifications.find(q => q.id === id);
+    
+        console.log(updatedQualification);
+        for (let key in updatedQualification) {
+            if (updatedQualification[key] === '') {
+                return;
             }
-        })
-            .then(response => {
-                setEditingId(null);
-                setNewQualification(null);
-                fetchQualifications();  
-            })
-            .catch(error => console.error('There was an error!', error));
-    } else { // If it's an existing qualification
+        }    
+
         axios.put(`https://localhost:7127/api/employee/${employeeId}/qualifications/${id}`, updatedQualification)
             .then(() => {
                 setEditingId(null);
                 fetchQualifications();  
             })
             .catch(error => console.error('There was an error!', error));
-    }
     };
+    const modalBody = (
+        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', border: '2px solid #000', boxShadow: 24, p: 4 }}>
+            <Heading as = "h2" >Add Qualification</Heading>
+
+            <form onSubmit={handleSubmit(handleSubmitModal)}>
+                <QualificationInput
+                    register={register}
+                    cancelQualification={handleCloseModal}
+                    formState={formState}
+                />
+                <div>
+                <Button type="submit">Submit</Button>
+                </div>
+            </form>
+        </Box>
+    );
 
     const columns = React.useMemo(() => [
         { Header: 'Qualification Name', accessor: 'qualificationName' },
@@ -156,9 +186,9 @@ const EmployeeQualifications = ({ employeeId }) => {
         { Header: 'Year Of Passing', accessor: 'yearOfPassing' },
         { Header: 'Percentage', accessor: 'percentage' },
         { Header: 'Stream', accessor: 'stream' },
-        { Header: 'Actions', accessor: 'id', Cell: ({ value }) => (
+        { Header: 'Actions', accessor: 'id', Cell: ({ value, row }) => (
             <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                {editingId === value ? (
+                {(editingId === value) ? (
                     <>
                         <FaSave onClick={() => handleSave(value)} />
                         <FaTimes onClick={handleCancel} /> {/* This is the new cancel button */}
@@ -184,7 +214,14 @@ const EmployeeQualifications = ({ employeeId }) => {
     return (
         <div>
 
-        <Button onClick={handleAdd}><FaPlus /></Button>
+        <Button onClick={handleOpenModal}><FaPlus /></Button>
+        <Modal
+                open={isModalOpen}
+                onClose={handleCloseModal}
+                aria-labelledby="modal-modal-title"
+            >
+                {modalBody}
+            </Modal>
         <StyledTable {...getTableProps()}>
             <thead>
                 {headerGroups.map(headerGroup => (
@@ -201,7 +238,7 @@ const EmployeeQualifications = ({ employeeId }) => {
                     return (
                         <tr {...row.getRowProps()}>
                             {row.cells.map(cell => (
-                                <td {...cell.getCellProps()}>{editingId === row.original.id && cell.column.id !== 'id' ? <EditableCell {...cell.getCellProps()} value={cell.value} updateMyData={updateMyData} row={cell.row} column={cell.column} /> : cell.render('Cell')}</td>
+                                <td {...cell.getCellProps()}>{editingId === row.original.id  && cell.column.id !== 'id' ? <EditableCell {...cell.getCellProps()} value={cell.value} updateMyData={updateMyData} row={cell.row} column={cell.column} /> : cell.render('Cell')}</td>
                             ))}
                         </tr>
                     );
